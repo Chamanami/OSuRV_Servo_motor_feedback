@@ -31,25 +31,18 @@ static servo_fb_t servo_fb[SERVO_FB__N_CH];
 
 
 static irqreturn_t fb_isr(int irq, void* data) {
-    u64 t = ktime_get_ns();
-    servo_fb_t* p = (servo_fb_t*)data;
-    bool s = gpio__read(p->pin);
-    u64 high, low;
-
-    if (s) {
-        // It was rising edge.
-        atomic64_set(&p->T_on, p->t_fe);
-        // TODO: Calculate high duty
-        high = t - p->t_fe;
-    } else {
-        // It was falling edge.
-        p->t_fe = t;
-        low = t - p->t_fe;
-    }
-
-    // TODO: Calculate duty
-
-    return IRQ_HANDLED;
+	u64 t = ktime_get_ns();
+	servo_fb_t* p = (servo_fb_t*)data;
+	bool s = gpio__read(p->pin);
+	if(s){
+		// It was rising edge.
+		atomic64_set(&p->T_on, p->t_fe);
+	}else{
+		// It was falling edge.
+		p->t_fe = t;
+	}
+	//TODO calc duty
+	return IRQ_HANDLED;
 }
 
 #define LABEL_TEMPLATE "irq_servo_fb_X"
@@ -123,23 +116,16 @@ void servo_fb__exit(void) {
 #define DIV_MUL ((INT64_T_ONE<<DIV_SHIFT)/20000)
 #define DIV_ADD (INT64_T_ONE<<(DIV_SHIFT-1))
 
-void servo_fb__get_pos_fb(servo_fb__ch_t ch, u16* pos_fb, u64* high, u64* low) {
-   u64 T_on = atomic64_read(&servo_fb[ch].T_on);
-   u64 t_now = ktime_get_ns();
-   u64 t_fe = servo_fb[ch].t_fe;
-
-   if (high) {
-      // Ako želimo izračunati vreme trajanja signala na visokom nivou.
-      *high = (gpio__read(servo_fb[ch].pin) == 1) ? (t_now - t_fe) : 0;
-   }
-
-   if (low) {
-      // Ako želimo izračunati vreme trajanja signala na niskom nivou.
-      *low = (gpio__read(servo_fb[ch].pin) == 0) ? (t_now - t_fe) : 0;
-   }
-
-   // Izračunaj faktor ispune u procentima.
-   u16 duty = (u16)((T_on * 1000) / 20000); // Prilagođeno za 50 Hz.
-
-   *pos_fb = duty;
+void servo_fb__get_pos_fb(servo_fb__ch_t ch, u16* pos_fb) {
+	u64 T_on; // [ns]
+	u16 duty; // [permille]
+	
+	// Make local copy of measurement.
+	T_on = atomic64_read(&servo_fb[ch].T_on);
+	
+	// Hard-coded for 50 Hz.
+	// duty = T_on/20000;
+	duty = (T_on*DIV_MUL + DIV_ADD) >> DIV_SHIFT;
+	
+	*pos_fb = duty;
 }

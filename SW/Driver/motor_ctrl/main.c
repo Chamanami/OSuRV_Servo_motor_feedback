@@ -15,7 +15,7 @@ MODULE_LICENSE("Dual BSD/GPL");
 #include "servo_fb.h"
 
 
-#define FAKE_FEEDBACK 1
+#define FAKE_FEEDBACK 0
 
 #ifdef WIDE_PWM
 #define DEFUALT_THRESHOLD 500

@@ -20,6 +20,7 @@ import waflib
 one_file_programs = [
 	'test_pwm.c',
 	'test_servos.c',
+	'test_fb.c',
 	'test_bldc.c',
 	'test_pwm_map.cpp'
 ]
