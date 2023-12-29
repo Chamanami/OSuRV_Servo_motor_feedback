@@ -27,7 +27,6 @@ static inline int c_str_eq(const char* a, const char* b) {
 int parse_args(
 	int argc,
 	char** argv,
-	char* p_op,
 	int* p_servo_idx,
 	int* p_angle
 ) {
@@ -44,14 +43,14 @@ int parse_args(
 		}
 	}else if(argc == 3){
 		int n;
-		n = sscanf(argv[2], "%d", p_servo_idx);
+		n = sscanf(argv[1], "%d", p_servo_idx);
 		if(n != 1){
-			fprintf(stderr, "ERROR: Invalid number \"%s\"!\n", argv[2]);
+			fprintf(stderr, "ERROR: Invalid number \"%s\"!\n", argv[1]);
 			return 3;
 		}
-		n = sscanf(argv[3], "%d", p_angle);
+		n = sscanf(argv[2], "%d", p_angle);
 		if(n != 1){
-			fprintf(stderr, "ERROR: Invalid number \"%s\"!\n", argv[3]);
+			fprintf(stderr, "ERROR: Invalid number \"%s\"!\n", argv[2]);
 			return 3;
 		}
 	}else{
@@ -69,7 +68,7 @@ int main(int argc, char** argv){
 	char op;
 	int servo_idx;
 	int duty;
-	int r = parse_args(argc, argv, &op, &servo_idx, &duty);
+	int r = parse_args(argc, argv, &servo_idx, &duty);
 	if(r){
 		return r;
 	}
@@ -98,20 +97,20 @@ int main(int argc, char** argv){
 		return 4;
 	}
 	
-	for(int i = 0; i < 5; i++){
 	
-		r = read(fd, (char*)&duties, sizeof(duties));
-		if(r != sizeof(duties)){
-			fprintf(stderr, "ERROR: read went wrong!\n");
-			return 4;
-		}
-		for(int i = 0; i < MOTOR_CLTR__N_SERVO; i++){
-			printf("duties[%d] = %d\n", i, duties[i]);
-		}
-		
-		duty = duties[servo_idx]; // [permilles]
-		printf("duty = %d\n", duty);
+	
+	r = read(fd, (char*)&duties, sizeof(duties));
+	if(r != sizeof(duties)){
+		fprintf(stderr, "ERROR: read went wrong!\n");
+		return 4;
 	}
+	for(int i = 0; i < MOTOR_CLTR__N_SERVO; i++){
+		printf("duties[%d] = %d\n", i, duties[i]);
+	}
+	
+	duty = duties[servo_idx]; // [permilles]
+	printf("duty = %d\n", duty);
+	
 
 	close(fd);
 
