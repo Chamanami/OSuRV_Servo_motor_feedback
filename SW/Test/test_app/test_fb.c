@@ -100,6 +100,9 @@ int main(int argc, char** argv){
 	
 	
 	r = read(fd, (char*)&duties, sizeof(duties));
+	
+	
+	
 	if(r != sizeof(duties)){
 		fprintf(stderr, "ERROR: read went wrong!\n");
 		return 4;

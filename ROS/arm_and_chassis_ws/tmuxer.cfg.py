@@ -100,7 +100,7 @@ _targets = {
 	'run_drv': [
 		{
 			'app' : '''
-				./build/test_fb 0 500 NO_ENTER
+				./build/test_servos w 0 500 NO_ENTER
 				''',
 		},
 	],

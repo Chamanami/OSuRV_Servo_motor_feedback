@@ -127,5 +127,7 @@ void servo_fb__get_pos_fb(servo_fb__ch_t ch, u16* pos_fb) {
 	// duty = T_on/20000;
 	duty = (T_on*DIV_MUL + DIV_ADD) >> DIV_SHIFT;
 	
+	printk("T_on: %lld, duty: %d", T_on, duty);
+	
 	*pos_fb = duty;
 }
