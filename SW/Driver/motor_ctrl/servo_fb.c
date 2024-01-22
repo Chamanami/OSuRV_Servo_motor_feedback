@@ -24,7 +24,7 @@ static const uint8_t pins[SERVO_FB__N_CH] = {
 typedef struct {
 	uint8_t pin;
 	int irq;
-	u64 t_fe; // [ns]
+	u64 t_re; // [ns]
 	atomic64_t T_on; // [ns]
 } servo_fb_t;
 static servo_fb_t servo_fb[SERVO_FB__N_CH];
@@ -36,12 +36,11 @@ static irqreturn_t fb_isr(int irq, void* data) {
 	bool s = gpio__read(p->pin);
 	if(s){
 		// It was rising edge.
-		atomic64_set(&p->T_on, p->t_fe);
+		p->t_re = t;
 	}else{
 		// It was falling edge.
-		p->t_fe = t;
+		atomic64_set(&p->T_on, t - p->t_re);
 	}
-	//TODO calc duty
 	return IRQ_HANDLED;
 }
 
@@ -124,7 +123,8 @@ void servo_fb__get_pos_fb(servo_fb__ch_t ch, u16* pos_fb) {
 	T_on = atomic64_read(&servo_fb[ch].T_on);
 	
 	// Hard-coded for 50 Hz.
-	// duty = T_on/20000;
+	//duty = T_on/20000;
+	//duty = div_u64(T_on, 20000);
 	duty = (T_on*DIV_MUL + DIV_ADD) >> DIV_SHIFT;
 	
 	printk("T_on: %lld, duty: %d", T_on, duty);

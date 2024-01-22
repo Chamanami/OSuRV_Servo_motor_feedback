@@ -66,14 +66,15 @@ int parse_args(
 
 int main(int argc, char** argv){
 	char op;
-	int servo_idx;
-	int duty;
+	int servo_idx = 0;
+	int duty = 500;
 	int r = parse_args(argc, argv, &servo_idx, &duty);
+	int p;
 	if(r){
 		return r;
 	}
 
-	uint16_t duties[MOTOR_CLTR__N_SERVO] = {0};
+	uint16_t duties[MOTOR_CLTR__N_SERVO] = {0};	
 	
 	int fd;
 	fd = open(DEV_FN, O_RDWR);
@@ -83,13 +84,18 @@ int main(int argc, char** argv){
 		return 4;
 	}
 	
-	
+	for(int i=0; i<MOTOR_CLTR__N_SERVO; i++)
+{
+	duties[i] = i;	
+}
 	printf("duty = %d\n", duty);
 	duties[servo_idx] = duty; // [permilles]
 	
 	for(int i = 0; i < MOTOR_CLTR__N_SERVO; i++){
 		printf("duties[%d] = %d\n", i, duties[i]);
 	}
+
+
 	
 	r = write(fd, (char*)&duties, sizeof(duties));
 	if(r != sizeof(duties)){
@@ -97,13 +103,19 @@ int main(int argc, char** argv){
 		return 4;
 	}
 	
+	for(int i=0; i<MOTOR_CLTR__N_SERVO; i++)
+{
+	duties[i] = 0;	
+}
+	sleep(3);
 	
+	lseek(fd, -sizeof(duties) , SEEK_CUR);
 	
-	r = read(fd, (char*)&duties, sizeof(duties));
+	p = read(fd, (char*)&duties, sizeof(duties));
+		
+		
 	
-	
-	
-	if(r != sizeof(duties)){
+	if(p != sizeof(duties)){
 		fprintf(stderr, "ERROR: read went wrong!\n");
 		return 4;
 	}
