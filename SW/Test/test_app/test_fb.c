@@ -59,7 +59,6 @@ int parse_args(
 		usage(stderr);
 		return 1;
 	}
-	//TODO limits
 	return 0;
 }
 
